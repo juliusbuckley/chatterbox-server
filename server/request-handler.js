@@ -11,6 +11,9 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
+var body = {
+  results: []
+};
 
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
@@ -30,7 +33,7 @@ var requestHandler = function(request, response) {
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
 
   // The outgoing status.
-  var statusCode = 201;
+  var statusCode = 200;
 
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
@@ -40,31 +43,37 @@ var requestHandler = function(request, response) {
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
   headers['Content-Type'] = 'application/json';
-
-  if (request.method === 'POST') {
-    var body = '';
-
-    request.on('data', data => {
-      body += data;
-      console.log('partial body: ' + body.toString());
-    });
-
-    request.on('end', () => {
-      console.log('Body: ' + body.toString());
+  if (request.url === '/classes/messages') {
+    if (request.method === 'POST') {
+      statusCode = 201;
       response.writeHead(statusCode, headers);
-      response.end();
-    });
-    // .writeHead() writes to the request line and headers of the response,
-    // which includes the status and all headers.
-    // response.end(JSON.stringify({results: []}));
+      request.on('error', function (err) {
+        console.log(err);
+      });
+
+      request.on('data', function (chunk) {
+        //first, data presents itself as numbers. Make it into a string
+        //then parse it, then push it into your array
+        body.results.push(JSON.parse(chunk.toString()));
+      });
+      // response.end();
+      request.on('end', function () {
+        response.writeHead(statusCode, headers);
+        response.end();
+      });
+
+    } else if (request.method === 'GET') {
+      response.writeHead(statusCode, headers);
+      response.end(JSON.stringify(body));
+    }
   } else {
-    console.log('GET');
-    //var html = '<html><body><form method="post" action="http://localhost:3000">Name: <input type="text" name="name" /><input type="submit" value="Submit" /></form></body>';
-    // var html = fs.readFileSync('index.html');
-    // response.writeHead(statusCode, headers);
-    // response.end(html);
-    response.end(JSON.stringify({results: []}));
+    console.log('error');
+    statusCode = 404;
+    response.writeHead(statusCode, headers);
+    response.end();
   }
+  // .writeHead() writes to the request line and headers of the response,
+  // which includes the status and all headers.
 
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
@@ -73,6 +82,7 @@ var requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
+  response.end(JSON.stringify(body));
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
