@@ -11,6 +11,15 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
+var fs = require('fs');
+var index;
+fs.readFile('./client/index.html', function(err, data) {
+  if (err) {
+    console.log(err);
+  }
+  index = data.toString();
+  console.log(index);
+});
 var body = {
   results: [{username: 'billy the kid', message: 'we ouchea'}]
 };
