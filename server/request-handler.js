@@ -12,7 +12,7 @@ this file and include it in basic-server.js so that it actually works.
 
 **************************************************************/
 var body = {
-  results: []
+  results: [{username: 'billy the kid', message: 'we ouchea'}]
 };
 
 var requestHandler = function(request, response) {
@@ -44,7 +44,7 @@ var requestHandler = function(request, response) {
   // other than plain text, like JSON or HTML.
   headers['Content-Type'] = 'application/json';
   if (request.url === '/classes/messages') {
-    if (request.method === 'POST') {
+    if (request.method === 'POST') { 
       statusCode = 201;
       response.writeHead(statusCode, headers);
       request.on('error', function (err) {
@@ -65,6 +65,9 @@ var requestHandler = function(request, response) {
     } else if (request.method === 'GET') {
       response.writeHead(statusCode, headers);
       response.end(JSON.stringify(body));
+    } else if (request.method === 'OPTIONS') {
+      response.writeHead(statusCode, headers);
+      response.end();
     }
   } else {
     console.log('error');
